@@ -143,6 +143,7 @@ end function;
 
 intrinsic AllTwists(C::CrvHyp, K::FldNum : CheckAutomorphisms := true) -> SeqEnum[CrvHyp]
 	{ compute all the twists of C over K }
+	require Degree(K) gt 1 : "second argument cannot be the rationals";
 	// First compute the Galois group of K to check that K is Galois.
 	G := GaloisGroup(K);
 	assert(#G eq AbsoluteDegree(K));
