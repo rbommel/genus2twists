@@ -141,36 +141,54 @@ function ParticularTwist(C, K, G, phi, rho, nu)
 	return Hs;
 end function;
 
-intrinsic AllTwists(C::CrvHyp, K::FldNum : CheckAutomorphisms := true) -> SeqEnum[CrvHyp]
+intrinsic AllTwists(C::CrvHyp, K::FldNum : CheckAutomorphisms:=true) -> SeqEnum[CrvHyp]
 	{ compute all the twists of C over K }
+	vprint Twists: Sprintf("AllTwists(C, K), where C:=%o, K:=%o", C, K);
+	require Degree(K) gt 1 : "second argument cannot be the rationals";
 	// First compute the Galois group of K to check that K is Galois.
+	vprintf Twists: "Computing GaloisGroup(K)...";
+	vtime Twists:
 	G := GaloisGroup(K);
-	assert(#G eq AbsoluteDegree(K));
+	require #G eq AbsoluteDegree(K): "K is not Galois";
+	vprintf Twists: "Computing AutomorphismGroup(K)...";
+	vtime Twists:
 	G, _, rho := AutomorphismGroup(K);
-	vprint Twists : "Galois group found";
 
 	// Now compute the automorphisms of C_K and check that these are all geometric automorphisms.
 	C := SimplifiedModel(C);
+	vprint Twists: "New model for C = ", C;
+	vprintf Twists: "Computing automorphism of C over K...";
+	vtime Twists:
 	A, phi := AutomorphismGroup(ChangeRing(C, K));
 	if CheckAutomorphisms then
+		vprintf Twists: "Computing automorphism of C over Qbar...";
+		vtime Twists:
 		Abar := GeometricAutomorphismGroup(C);
-		assert(#A eq #Abar);
+		assert #A eq #Abar;
 		vprint Twists : "Automorphism group checked";
 	end if;
 
 	// Find H1
+	vprintf Twists: "Computing action on hom-set...";
+	vtime Twists:
 	M := map< G->Maps(A,A) | g:-> map<A->A | a:->[b : b in A | ApplyGalois(phi(a),rho(g)) eq phi(b)][1] > >;
+	vprintf Twists: "Caching action on hom-set...";
+	vtime Twists:
 	M := MapToAssociativeArray(M);
 	vprint Twists : "Galois action on hom-set defined";
+	vprintf Twists: "Computing H1...";
+	vtime Twists:
 	H1CK := H1(G, A, M);
 	vprint Twists : "H1 found";
 
 	// Find all twists
 	L := [];
-	for nu in H1CK do
+	for i->nu in H1CK do
+		vprintf Twists : "Computing %o twist of %o...", i, #H1CK;
+		vtime Twists:
 		T := ParticularTwist(C, K, G, phi, rho, nu);
 		Append(~L, T);
 	end for;
-	vprint Twists : "Twists found";
+	vprint Twists : "AllTwists(C, K) done";
 	return L;
 end intrinsic;
