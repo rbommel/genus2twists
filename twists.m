@@ -141,6 +141,22 @@ function ParticularTwist(C, K, G, phi, rho, nu)
 	return Hs;
 end function;
 
+intrinsic BaseChangeAut(G::Grp, phi::Map, L::FldNum) -> Gpr, Map
+	{ Base change automorphism group of a curve to a bigger field. }
+	CK := Domain(phi(Identity(G)));
+	K := BaseRing(CK);
+	require K subset L: "Field of definiting not contained inside L";
+	CL := BaseChange(CK, L);
+	A := AssociativeArray();
+	for g in G do
+		rhoG := map< CL->CL | [CoordinateRing(Ambient(CL))!f : f in DefiningEquations(phi(g))] >;
+		_, rhoG := IsAutomorphism(rhoG);
+		A[g] := rhoG;
+	end for;
+	rho := map< G->AutomorphismGroup(CL, [A[g] : g in Generators(G)]) | g :-> A[g] >;
+	return G, rho;
+end intrinsic;
+
 intrinsic AllTwists(C::CrvHyp, K::FldNum : CheckAutomorphisms:=true) -> SeqEnum[CrvHyp]
 	{ compute all the twists of C over K }
 	vprint Twists: Sprintf("AllTwists(C, K), where C:=%o, K:=%o", C, K);
