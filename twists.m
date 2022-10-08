@@ -141,7 +141,7 @@ function ParticularTwist(C, K, G, phi, rho, nu)
 	return Hs;
 end function;
 
-intrinsic BaseChangeAut(G::Grp, phi::Map, L::FldNum) -> Gpr, Map
+intrinsic BaseChangeAutomorphismGroup(G::Grp, phi::Map, L::FldNum) -> Gpr, Map
 	{ Base change automorphism group of a curve to a bigger field. }
 	CK := Domain(phi(Identity(G)));
 	K := BaseRing(CK);
@@ -153,7 +153,19 @@ intrinsic BaseChangeAut(G::Grp, phi::Map, L::FldNum) -> Gpr, Map
 		_, rhoG := IsAutomorphism(rhoG);
 		A[g] := rhoG;
 	end for;
-	rho := map< G->AutomorphismGroup(CL, [A[g] : g in Generators(G)]) | g :-> A[g] >;
+	rho := map< G->Aut(CL) | [ car< G, Aut(CL) > | <g, A[g]> : g in G]>;
+	return G, rho;
+end intrinsic;
+
+intrinsic PushforwardAutomorphismGroup(G::Grp, phi::Map, m::Map) -> Gpr, Map
+	{ Base change automorphism group of a curve to a different model. }
+	C0 := Domain(m);
+	C1 := Codomain(m);
+	m1 := Inverse(m);
+	require C0 eq Domain(phi(Identity(G))): "The domain of the map and the automorphism group do not match";
+	rho := map< G -> Aut(C1) |
+          [ car< G, Aut(C1) > |
+					<g, newphi>  where _, newphi := IsAutomorphism(m1*phi(g)*m): g in G] >;
 	return G, rho;
 end intrinsic;
 
