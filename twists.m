@@ -147,13 +147,8 @@ intrinsic BaseChangeAutomorphismGroup(G::Grp, phi::Map, L::FldNum) -> Gpr, Map
 	K := BaseRing(CK);
 	require K subset L: "Field of definiting not contained inside L";
 	CL := BaseChange(CK, L);
-	A := AssociativeArray();
-	for g in G do
-		rhoG := map< CL->CL | [CoordinateRing(Ambient(CL))!f : f in DefiningEquations(phi(g))] >;
-		_, rhoG := IsAutomorphism(rhoG);
-		A[g] := rhoG;
-	end for;
-	rho := map< G->Aut(CL) | [ car< G, Aut(CL) > | <g, A[g]> : g in G]>;
+	R := CoordinateRing(Ambient(CL));
+	rho := map< G->Aut(CL) | [ car< G, Aut(CL) > | <g, iso< CL->CL | [R!f : f in DefiningEquations(phi(g))], [R!f : f in DefiningEquations(Inverse(phi(g)))] >> : g in G]>;
 	return G, rho;
 end intrinsic;
 
