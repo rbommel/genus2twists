@@ -160,7 +160,7 @@ intrinsic PushforwardAutomorphismGroup(G::Grp, phi::Map, m::Map) -> Gpr, Map
 	require C0 eq Domain(phi(Identity(G))): "The domain of the map and the automorphism group do not match";
 	rho := map< G -> Aut(C1) |
           [ car< G, Aut(C1) > |
-					<g, newphi>  where _, newphi := IsAutomorphism(m1*phi(g)*m): g in G] >;
+					<g, m1*phi(g)*m>: g in G] >;
 	return G, rho;
 end intrinsic;
 
@@ -192,16 +192,14 @@ intrinsic AllTwists(C::CrvHyp, K::FldNum : CheckAutomorphisms:=true, AutGrp:=fal
 		A0, phi0 := Explode(AutGrp);
 		// extra automorphism field
 		L := BaseRing(Domain(phi0(Identity(A0))));
-		C0L := ChangeRing(C0, L);
-		require Domain(phi0(Identity(A0))) eq C0L : "the curves don't match";
+		C0L := Domain(phi0(Identity(A0)));
+		require ChangeRing(C0, L) eq C0L : "the curves don't match";
 		CL, mL := SimplifiedModel(C0L);
-		print CL;
-		print ChangeRing(C, L);
 		assert CL eq ChangeRing(C, L);
 		// push it to CL
 		AL, phiL := PushforwardAutomorphismGroup(A0, phi0, mL);
 		// change base ring to K
-		A, phi := BaseChangeAutomorphismGroup(A, phi, K);
+		A, phi := BaseChangeAutomorphismGroup(AL, phiL, K);
 	end if;
 	if CheckAutomorphisms then
 		vprintf Twists: "Computing automorphism of C over Qbar...";
@@ -230,6 +228,7 @@ intrinsic AllTwists(C::CrvHyp, K::FldNum : CheckAutomorphisms:=true, AutGrp:=fal
 		vprintf Twists : "Computing %o twist of %o...", i, #H1CK;
 		vtime Twists:
 		T := ParticularTwist(C, K, G, phi, rho, nu);
+		T := ReducedMinimalWeierstrassModel(T);
 		Append(~L, T);
 	end for;
 	vprint Twists : "AllTwists(C, K) done";
