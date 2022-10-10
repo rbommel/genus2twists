@@ -164,7 +164,7 @@ intrinsic PushforwardAutomorphismGroup(G::Grp, phi::Map, m::Map) -> Gpr, Map
 	return G, rho;
 end intrinsic;
 
-intrinsic AllTwists(C::CrvHyp, K::FldNum : CheckAutomorphisms:=true) -> SeqEnum[CrvHyp]
+intrinsic AllTwists(C::CrvHyp, K::FldNum : CheckAutomorphisms:=true, AutGrp:=false ) -> SeqEnum[CrvHyp]
 	{ compute all the twists of C over K }
 	vprint Twists: Sprintf("AllTwists(C, K), where C:=%o, K:=%o", C, K);
 	require Degree(K) gt 1 : "second argument cannot be the rationals";
@@ -178,11 +178,31 @@ intrinsic AllTwists(C::CrvHyp, K::FldNum : CheckAutomorphisms:=true) -> SeqEnum[
 	G, _, rho := AutomorphismGroup(K);
 
 	// Now compute the automorphisms of C_K and check that these are all geometric automorphisms.
-	C := SimplifiedModel(C);
+	C, m := SimplifiedModel(C);
 	vprint Twists: "New model for C = ", C;
-	vprintf Twists: "Computing automorphism of C over K...";
-	vtime Twists:
-	A, phi := AutomorphismGroup(ChangeRing(C, K));
+	if AutGrp cmpeq false then
+		vprintf Twists: "Computing automorphism of C over K...";
+		vtime Twists:
+		A, phi := AutomorphismGroup(ChangeRing(C, K));
+	else
+		vprintf Twists: "Using provided automorphism group...";
+		// obtain original curve
+		C0 := Domain(m);
+		// extract provided automorphism group
+		A0, phi0 := Explode(AutGrp);
+		// extra automorphism field
+		L := BaseRing(Domain(phi0(Identity(A0))));
+		C0L := ChangeRing(C0, L);
+		require Domain(phi0(Identity(A0))) eq C0L : "the curves don't match";
+		CL, mL := SimplifiedModel(C0L);
+		print CL;
+		print ChangeRing(C, L);
+		assert CL eq ChangeRing(C, L);
+		// push it to CL
+		AL, phiL := PushforwardAutomorphismGroup(A0, phi0, mL);
+		// change base ring to K
+		A, phi := BaseChangeAutomorphismGroup(A, phi, K);
+	end if;
 	if CheckAutomorphisms then
 		vprintf Twists: "Computing automorphism of C over Qbar...";
 		vtime Twists:
