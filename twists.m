@@ -228,7 +228,6 @@ intrinsic AllTwists(C::CrvHyp, K::FldNum : CheckAutomorphisms:=true, AutGrp:=fal
 		vprintf Twists : "Computing %o twist of %o...", i, #H1CK;
 		vtime Twists:
 		T := ParticularTwist(C, K, G, phi, rho, nu);
-		T := ReducedMinimalWeierstrassModel(T);
 		Append(~L, T);
 	end for;
 	vprint Twists : "AllTwists(C, K) done";
