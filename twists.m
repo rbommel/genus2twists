@@ -136,7 +136,7 @@ function ParticularTwist(C, K, G, phi, rho, nu)
 	assert Denominator(f) eq 1;
 	assert {c in Rationals() : c in Coefficients(Numerator(f))} eq {true};
 	H := HyperellipticCurve(ChangeRing(Numerator(f), Rationals()));
-	Hs := ReducedMinimalWeierstrassModel(H);
+	Hs := MinimalWeierstrassModel(H);
 
 	return Hs;
 end function;
