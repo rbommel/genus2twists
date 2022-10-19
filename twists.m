@@ -135,7 +135,7 @@ function ExtendToGL2(nu)
 	return map< Domain(nu)->Parent(A[Random(Domain(nu))]) | x :-> A[x] >;
 end function;
 
-function ParticularTwist(C, K, G, phi, rho, nu)
+function ParticularTwist(C, K, G, phi, rho, nu: minimal:=true)
 	// C is a curve over a Galois number field K
 	// G is the (abstract) Galois group of K over Q
 	// rho maps elements of G to automorphisms of K
@@ -158,9 +158,12 @@ function ParticularTwist(C, K, G, phi, rho, nu)
 	assert Denominator(f) eq 1;
 	assert {c in Rationals() : c in Coefficients(Numerator(f))} eq {true};
 	H := HyperellipticCurve(ChangeRing(Numerator(f), Rationals()));
-	Hs := ReducedMinimalWeierstrassModel(H);
+	if minimal then
+		// this can be time consuming and also fail
+		H := ReducedMinimalWeierstrassModel(H);
+	end if;
 
-	return Hs;
+	return H;
 end function;
 
 intrinsic BaseChangeAutomorphismGroup(G::Grp, phi::Map, L::FldNum) -> Gpr, Map
@@ -186,7 +189,7 @@ intrinsic PushforwardAutomorphismGroup(G::Grp, phi::Map, m::Map) -> Gpr, Map
 	return G, rho;
 end intrinsic;
 
-intrinsic AllTwists(C::CrvHyp, K::FldNum : CheckAutomorphisms:=true, AutGrp:=false ) -> SeqEnum[CrvHyp]
+intrinsic AllTwists(C::CrvHyp, K::FldNum : CheckAutomorphisms:=true, AutGrp:=false, minimal:=true ) -> SeqEnum[CrvHyp]
 	{ compute all the twists of C over K }
 	vprint Twists: Sprintf("AllTwists(C, K), where C:=%o, K:=%o", C, K);
 	require Degree(K) gt 1 : "second argument cannot be the rationals";
@@ -254,7 +257,7 @@ intrinsic AllTwists(C::CrvHyp, K::FldNum : CheckAutomorphisms:=true, AutGrp:=fal
 	for i->nu in H1CK do
 		vprintf Twists : "Computing %o twist of %o...", i, #H1CK;
 		vtime Twists:
-		T := ParticularTwist(C, K, G, phi, rho, nu);
+		T := ParticularTwist(C, K, G, phi, rho, nu : minimal:=minimal);
 		Append(~L, T);
 	end for;
 	vprint Twists : "AllTwists(C, K) done";
