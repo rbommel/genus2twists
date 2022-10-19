@@ -2,7 +2,7 @@
 declare verbose Twists, 1;
 
 function ApplyGalois(f, rho)
-	if Type(f) in {Map, MapAutSch} then
+	if Type(f) eq Map then
 		// Given a morphism of curves, apply a Galois action to its coefficients.
 		C := Domain(f);
 		D := Codomain(f);
@@ -14,6 +14,24 @@ function ApplyGalois(f, rho)
 			Append(~Erho, &+[rho(gC[i])*mC[i] : i in [1..#gC]]);
 		end for;
 		return hom<C->D | Erho>;
+	elif Type(f) eq MapAutSch then
+		C := Domain(f);
+		D := Codomain(f);
+		E := DefiningEquations(f);
+		Erho1 := [];
+		for g in E do
+			gC := Coefficients(g);
+			mC := Monomials(g);
+			Append(~Erho1, &+[rho(gC[i])*mC[i] : i in [1..#gC]]);
+		end for;
+		E := DefiningEquations(Inverse(f));
+		Erho2 := [];
+		for g in E do
+			gC := Coefficients(g);
+			mC := Monomials(g);
+			Append(~Erho2, &+[rho(gC[i])*mC[i] : i in [1..#gC]]);
+		end for;
+		return iso<C->D | Erho1, Erho2>;
 	elif Type(f) eq AlgMatElt then
 		// Given a matrix, apply a Galois action on its coefficients.
 		return Matrix([ [rho(f[j][i]) : i in [1..NumberOfRows(f)]] : j in [1..NumberOfColumns(f)]]);
