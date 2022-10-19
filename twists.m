@@ -54,10 +54,10 @@ function H1(G, A, M)
 		while #Keys(h) ne #G or AddedNewOne do
 			AddedNewOne := false;
 			for g1, g2 in Keys(h) do
-				if not(g1*g2) in Keys(h) then
-					h[g1*g2] := h[g1] * M[g1][h[g2]];
+				if not(g2*g1) in Keys(h) then
+					h[g2*g1] := h[g1] * M[g1][h[g2]];
 					AddedNewOne := true;
-				elif h[g1*g2] ne h[g1] * M[g1][h[g2]] then
+				elif h[g2*g1] ne h[g1] * M[g1][h[g2]] then
 					continue rho;	// Cocycle condition has not been satisfied.
 				end if;
 			end for;
@@ -71,9 +71,9 @@ function HilbertNinety(nu, K, rho)
 	repeat
 		repeat
 			M0 := Matrix([[ &+[Random([-10..10])*K.1^e : e in [0..Degree(K)-1]] : i in [1,2]]: j in [1,2]]);
-			M := &+[ ApplyGalois(M0, rho(g^(-1))) * nu(g) : g in Domain(nu) ];
+			M := &+[ ApplyGalois(M0, rho(g)) * nu(g) : g in Domain(nu) ];
 		until Determinant(M) ne 0;
-	until {ApplyGalois(M, rho(g^(-1)))^(-1)*M eq nu(g) : g in Domain(nu)} eq {true};
+	until {ApplyGalois(M, rho(g))^(-1)*M eq nu(g) : g in Domain(nu)} eq {true};
 	return M;
 end function;
 
@@ -136,7 +136,7 @@ function ParticularTwist(C, K, G, phi, rho, nu)
 	assert Denominator(f) eq 1;
 	assert {c in Rationals() : c in Coefficients(Numerator(f))} eq {true};
 	H := HyperellipticCurve(ChangeRing(Numerator(f), Rationals()));
-	Hs := MinimalWeierstrassModel(H);
+	Hs := ReducedMinimalWeierstrassModel(H);
 
 	return Hs;
 end function;
