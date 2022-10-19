@@ -108,25 +108,29 @@ function GetCoefficients(f, M)
 	return C;
 end function;
 
+function ExtendHomToGL2(f)
+	R<x,y,z> := Parent(f[1]);
+	cx := GetCoefficients(f[1], [x,z]);
+	cy := GetCoefficients(f[2], [y]);
+	cz := GetCoefficients(f[3], [x,z]);
+	a := cx[x];
+	b := cx[z];
+	c := cz[x];
+	d := cz[z];
+	e := cy[y];
+	lambda := e * (a*d - b*c)^(-1);
+	a /:= lambda;
+	b /:= lambda;
+	c /:= lambda;
+	d /:= lambda;
+	return Matrix([ [a,b], [c,d] ]);
+end function;
+
 function ExtendToGL2(nu)
 	A := AssociativeArray();
 	for g in Domain(nu) do
 		f := DefiningEquations(nu(g));
-		R<x,y,z> := Parent(f[1]);
-		cx := GetCoefficients(f[1], [x,z]);
-		cy := GetCoefficients(f[2], [y]);
-		cz := GetCoefficients(f[3], [x,z]);
-		a := cx[x];
-		b := cx[z];
-		c := cz[x];
-		d := cz[z];
-		e := cy[y];
-		lambda := e * (a*d - b*c)^(-1);
-		a /:= lambda;
-		b /:= lambda;
-		c /:= lambda;
-		d /:= lambda;
-		A[g] := Matrix([ [a,b], [c,d] ]);
+		A[g] := ExtendHomToGL2(f);;
 	end for;
 	return map< Domain(nu)->Parent(A[Random(Domain(nu))]) | x :-> A[x] >;
 end function;
@@ -226,11 +230,16 @@ intrinsic AllTwists(C::CrvHyp, K::FldNum : CheckAutomorphisms:=true, AutGrp:=fal
 		assert #A eq #Abar;
 		vprint Twists : "Automorphism group checked";
 	end if;
+	// Cache phi as GL2
+	phiGL2 := AssociativeArray();
+	for elt in A do
+		phiGL2[elt] := ExtendHomToGL2(DefiningEquations(phi(elt)));
+	end for;
 
 	// Find H1
 	vprintf Twists: "Computing action on hom-set...";
 	vtime Twists:
-	M := map< G->Maps(A,A) | g:-> map<A->A | a:->[b : b in A | ApplyGalois(phi(a),rho(g)) eq phi(b)][1] > >;
+	M := map< G->Maps(A,A) | g:-> map<A->A | a:->[b : b in A | ApplyGalois(phiGL2[a], rho(g)) eq phiGL2[b]][1] > >;
 	vprintf Twists: "Caching action on hom-set...";
 	vtime Twists:
 	M := MapToAssociativeArray(M);
