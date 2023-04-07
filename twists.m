@@ -166,7 +166,7 @@ function ParticularTwist(C, K, G, phi, rho, nu: minimal:=true)
 	return H;
 end function;
 
-intrinsic BaseChangeAutomorphismGroup(G::Grp, phi::Map, L::FldNum) -> Gpr, Map
+intrinsic BaseChangeAutomorphismGroup(G::Grp, phi::Map, L::FldNum) -> Grp, Map
 	{ Base change automorphism group of a curve to a bigger field. }
 	CK := Domain(phi(Identity(G)));
 	K := BaseRing(CK);
@@ -177,7 +177,7 @@ intrinsic BaseChangeAutomorphismGroup(G::Grp, phi::Map, L::FldNum) -> Gpr, Map
 	return G, rho;
 end intrinsic;
 
-intrinsic PushforwardAutomorphismGroup(G::Grp, phi::Map, m::Map) -> Gpr, Map
+intrinsic PushforwardAutomorphismGroup(G::Grp, phi::Map, m::Map) -> Grp, Map
 	{ Base change automorphism group of a curve to a different model. }
 	C0 := Domain(m);
 	C1 := Codomain(m);
